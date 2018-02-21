@@ -8,6 +8,7 @@ import tempfile
 from threading import Thread
 from mycroft.messagebus.message import Message
 from mycroft.messagebus.client.ws import WebsocketClient
+from time import sleep
 
 
 class LocalListener(object):
@@ -54,6 +55,7 @@ class LocalListener(object):
             self.event_thread = Thread(target=connect)
             self.event_thread.setDaemon(True)
             self.event_thread.start()
+            sleep(2)
 
         self.event_thread = None
         self.async_thread = None
