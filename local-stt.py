@@ -12,29 +12,32 @@ from mycroft.messagebus.client.ws import WebsocketClient
 
 class LocalListener(object):
     def __init__(self, hmm=None, lm=None, le_dict=None, lang="en-us",
-                 emitter=None):
+                 emitter=None, debug=True):
         self.lang = lang
         self.decoder = None
         self.reset_decoder(hmm, lm, le_dict, lang)
 
-        ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int,
-                                       c_char_p)
+        if not debug:
+            ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int,
+                                           c_char_p)
 
-        def py_error_handler(filename, line, function, err, fmt):
-            ignores = [0, 2, 16, 77]
-            if err not in ignores:
-                print err, fmt
+            def py_error_handler(filename, line, function, err, fmt):
+                ignores = [0, 2, 16, 77]
+                if err not in ignores:
+                    print err, fmt
 
-        c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+            c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
 
-        @contextmanager
-        def noalsaerr():
-            asound = cdll.LoadLibrary('libasound.so')
-            asound.snd_lib_error_set_handler(c_error_handler)
-            yield
-            asound.snd_lib_error_set_handler(None)
+            @contextmanager
+            def noalsaerr():
+                asound = cdll.LoadLibrary('libasound.so')
+                asound.snd_lib_error_set_handler(c_error_handler)
+                yield
+                asound.snd_lib_error_set_handler(None)
 
-        with noalsaerr():
+            with noalsaerr():
+                self.p = pyaudio.PyAudio()
+        else:
             self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=pyaudio.paInt16, channels=1,
                                   rate=16000,
@@ -242,4 +245,3 @@ class LocalListener(object):
         self.async_thread.join(timeout=30)
         self.async_thread = None
         self.p.terminate()
-
