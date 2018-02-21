@@ -85,8 +85,6 @@ class LocalListener(object):
             self.reset_decoder()
         self.decoder.start_utt()
         buf = self.stream.read(1024)
-        self.emit("recognizer_loop:sleep")
-        self.emit("recognizer_loop:local_listener.start")
         if buf:
             self.decoder.process_raw(buf, False, False)
             if self.decoder.get_in_speech() != in_speech_bf:
@@ -103,11 +101,11 @@ class LocalListener(object):
                             self.decoder.end_utt()
                             return utt.strip()
         self.decoder.end_utt()
-        self.emit("recognizer_loop:local_listener.end")
-        self.emit("recognizer_loop:wake_up")
         return None
 
     def listen_async(self):
+        self.emit("recognizer_loop:sleep")
+        self.emit("recognizer_loop:local_listener.start")
         self.async_thread = Thread(target=self._async_listen)
         self.async_thread.setDaemon(True)
         self.async_thread.start()
@@ -117,6 +115,8 @@ class LocalListener(object):
         self.stream.start_stream()
         print "listening async"
         self.listening = True
+        self.emit("recognizer_loop:sleep")
+        self.emit("recognizer_loop:local_listener.start")
         while self.listening:
             ut = self._one_listen()
             if ut is not None:
@@ -130,6 +130,8 @@ class LocalListener(object):
         self.stream.start_stream()
         print "listening"
         self.listening = True
+        self.emit("recognizer_loop:sleep")
+        self.emit("recognizer_loop:local_listener.start")
         while self.listening:
             ut = self._one_listen()
             if ut is not None:
@@ -143,6 +145,8 @@ class LocalListener(object):
         self.stream.start_stream()
         print "listening"
         self.listening = True
+        self.emit("recognizer_loop:sleep")
+        self.emit("recognizer_loop:local_listener.start")
         while self.listening:
             ut = self._one_listen()
             if ut is not None:
@@ -170,6 +174,8 @@ class LocalListener(object):
         print "starting stream"
         self.stream.start_stream()
         print "specialized listening"
+        self.emit("recognizer_loop:sleep")
+        self.emit("recognizer_loop:local_listener.start")
         self.listening = True
         while self.listening:
             ut = self._one_listen()
@@ -192,6 +198,8 @@ class LocalListener(object):
 
         print "specialized listening"
         self.listening = True
+        self.emit("recognizer_loop:sleep")
+        self.emit("recognizer_loop:local_listener.start")
         while self.listening:
             ut = self._one_listen()
             if ut is not None:
@@ -202,6 +210,8 @@ class LocalListener(object):
 
     def stop_listening(self):
         if self.listening:
+            self.emit("recognizer_loop:local_listener.end")
+            self.emit("recognizer_loop:wake_up")
             self.listening = False
             return True
         return False
