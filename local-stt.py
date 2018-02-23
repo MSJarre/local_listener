@@ -82,6 +82,7 @@ class LocalListener(object):
         self.decoder = Decoder(self.config)
 
     def _one_listen(self):
+
         in_speech_bf = False
         if self.decoder is None:
             self.reset_decoder()
@@ -257,3 +258,9 @@ class LocalListener(object):
         self.async_thread.join(timeout=30)
         self.async_thread = None
         self.p.terminate()
+
+from jurebes.listener import LocalListener as local
+
+l = LocalListener()
+#l = local(hmm="en-us/hmm", le_dict="en-us/basic.dic", lm="en-us/localstt.lm")
+print l.listen_once()
